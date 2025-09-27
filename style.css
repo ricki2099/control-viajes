@@ -50,7 +50,7 @@ select {
 
 button {
     width: 100%;
-    background-color: #4208ff;
+    background-color: #8c1919;
     color: white;
     padding: 14px 20px;
     margin: 8px 0;
@@ -60,7 +60,7 @@ button {
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #b22222;
 }
 
 #summary-display, #alerts-display, #filtered-expenses-display {
@@ -74,16 +74,16 @@ button:hover {
 }
 
 .alert.yellow {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: #fdb400;
+    color: #333;
 }
 
 .alert.orange {
-    background-color: #ffeeba;
-    color: #856404;
+    background-color: #fdb400;
+    color: #333;
 }
 
 .alert.red {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: #8c1919;
+    color: #fff;
 }
