@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const categoryBudgetForm = document.getElementById("category-budget-form");
   const expenseForm = document.getElementById("expense-form");
   const filterBtn = document.getElementById("filter-btn");
+  const pdfBtn = document.getElementById("generate-pdf-btn");
 
   const tripSelects = [
     document.getElementById("trip-select-budget"),
@@ -12,6 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
 
   let trips = [];
+
+  let chart = []; // Variable para almacenar la instancia del gráfico
 
   tripForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -65,8 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
         (sum, val) => sum + val,
         0
       );
+      console.log(totalCategoryBudget, amount, trip.totalBudget);
 
-      if (totalCategoryBudget + amount > trip.totalBudget) {
+      if (totalCategoryBudget + amount >= trip.totalBudget) {
         alert(
           "La suma de los presupuestos de las categorías no puede exceder el presupuesto total."
         );
@@ -193,7 +197,78 @@ document.addEventListener("DOMContentLoaded", () => {
             <p><strong>Presupuesto restante:</strong> ${remainingBudget.toFixed(
               2
             )} ${trip.currency}</p>
+            <canvas id="grafica"></canvas>
+            <canvas id="grafica2"></canvas>
+            
         `;
+    const labels = trip.expenses.map((exp) => exp.category);
+    const colors = [
+      "rgb(69,177,223)",
+      "rgb(99,201,122)",
+      "rgb(203,82,82)",
+      "rgb(229,224,88)",
+    ];
+    const infoData = trip.expenses.map((exp) => exp.amount);
+
+    const graph = document.querySelector("#grafica");
+
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          data: infoData,
+          backgroundColor: colors,
+        },
+      ],
+    };
+
+    const config = {
+      type: "pie",
+      data: data,
+    };
+
+    new Chart(graph, config);
+
+    // const labels2 = ["Enero", "Febrero", "Marzo", "Abril"];
+
+    const dataset1 = {
+      label: "Presupuesto Total",
+      data: trip.totalBudget
+        ? [
+            trip.totalBudget,
+            trip.totalBudget,
+            trip.totalBudget,
+            trip.totalBudget,
+          ]
+        : [0, 0, 0, 0],
+      borderColor: "rgba(248, 37, 37, 0.8)",
+      fill: false,
+      tension: 0.1,
+    };
+
+    const dataset2 = {
+      label: "Gasto Real",
+      data: infoData,
+      borderColor: "rgba(69, 248, 84, 0.8)",
+      fill: false,
+      tension: 0.1,
+    };
+
+    // gasto real vs gasto por categoria
+
+    const graph2 = document.querySelector("#grafica2");
+
+    const data2 = {
+      labels: labels,
+      datasets: [dataset1, dataset2],
+    };
+
+    const config2 = {
+      type: "line",
+      data: data2,
+    };
+
+    new Chart(graph2, config2);
 
     alertsDisplay.innerHTML = "";
     const percentageSpent = (totalExpenses / trip.totalBudget) * 100;
@@ -208,6 +283,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     displayFilteredExpenses(trip.expenses, trip.currency);
+    topCategories(trip.expenses);
+    topDownByCategory(trip.expenses);
   }
 
   function displayFilteredExpenses(expenses, currency) {
@@ -223,4 +300,88 @@ document.addEventListener("DOMContentLoaded", () => {
         )
         .join("");
   }
+
+  function topCategories(expenses) {
+    const categoryTotals = {};
+    expenses.forEach((exp) => {
+      if (!categoryTotals[exp.category]) {
+        categoryTotals[exp.category] = 0;
+      }
+      categoryTotals[exp.category] += exp.amount;
+    });
+    const sortedCategories = Object.entries(categoryTotals).sort(
+      (a, b) => b[1] - a[1]
+    );
+    const topCategories = document.getElementById("top-categories-display");
+    topCategories.innerHTML =
+      "<h4>Categorias principales:</h4>" +
+      sortedCategories
+        .map(([cat, amt]) => `<p>${cat}: ${amt.toFixed(2)}</p>`)
+        .join("");
+  }
+  function topDownByCategory(expenses) {
+    const categoryTotals = {};
+    expenses.forEach((exp) => {
+      if (!categoryTotals[exp.category]) {
+        categoryTotals[exp.category] = 0;
+      }
+      categoryTotals[exp.category] += exp.amount;
+    });
+    const sortedCategories = Object.entries(categoryTotals).sort(
+      (a, b) => a[1] - b[1]
+    );
+    const topCategories = document.getElementById("top-categories-display2");
+    topCategories.innerHTML =
+      "<h4>Categorias bajas principales:</h4>" +
+      sortedCategories
+        .map(([cat, amt]) => `<p>${cat}: ${amt.toFixed(2)}</p>`)
+        .join("");
+  }
+  pdfBtn.addEventListener("click", () => {
+    // cantidad de dias  graficas
+    const tripId = parseInt(
+      document.getElementById("trip-select-summary").value
+    );
+    const trip = trips.find((t) => t.id === tripId);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const imgCanvas = document.querySelector("#grafica");
+    const imgCanvas2 = document.querySelector("#grafica2");
+    const chart1Image = imgCanvas.toDataURL("image/png", 1.0);
+    const chart2Image = imgCanvas2.toDataURL("image/png", 1.0);
+    doc.addImage(chart1Image, "PNG", 10, 100, 190, 100);
+    doc.addImage(chart2Image, "PNG", 10, 200, 190, 100);
+    doc.text("Resumen del viaje", 10, 10);
+
+    doc.text(document.getElementById("summary-display").innerText, 10, 20);
+    doc.text("Categorias principales:", 10, 25);
+    doc.text(
+      document.getElementById("top-categories-display").innerText,
+      10,
+      30
+    );
+    doc.text(
+      document.getElementById("top-categories-display2").innerText,
+      10,
+      40
+    );
+    doc.text("Cantidad de días: " + trip.days, 10, 50);
+    doc.text("Resumen de Gastos:", 10, 60);
+    doc.text(
+      document.getElementById("filtered-expenses-display").innerText,
+      10,
+      70
+    );
+    // doc.text("Total Gastado: " + trip.totalSpent.toFixed(2) + " " + trip.currency, 10, 80);
+    // doc.text("Total Presupuesto: " + trip.totalBudget.toFixed(2) + " " + trip.currency, 10, 90);
+    // doc.text("Porcentaje Gastado: " + percentageSpent.toFixed(2) + "%", 10, 100);
+    // doc.text("Resumen de Gráficas:", 10, 110);
+    // doc.addPage();
+    // doc.text("Gráfica 1: Gastos por Categoría", 10, 10);
+    // doc.addImage(chart1Image, "PNG", 10, 20, 180, 160);
+    // doc.addPage();
+    // doc.text("Gráfica 2: Gastos por Día", 10, 10);
+    // doc.addImage(chart2Image, "PNG", 10, 20, 180, 160);
+    doc.save("resumen_viaje.pdf");
+  });
 });
