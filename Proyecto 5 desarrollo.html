@@ -3,17 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Presupuesto de Viajes</title>
+    <title>Gestor de Presupuesto de Viaje</title>
     <link rel="stylesheet" href="style.css" />
-    <script
-      type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.8.0/chart.min.js"
-    ></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   </head>
   <body>
     <div class="container">
-      <h1>Presupuesto de Viajes</h1>
+      <h1>Gestor de Presupuesto de Viaje</h1>
+
       <div id="trip-registration" class="card">
         <h2>
           <img
@@ -21,32 +20,32 @@
             alt="Trip Icon"
             class="icon"
           />
-          Registrar Viaje
+          Registra tu Viaje
         </h2>
         <form id="trip-form">
           <input
             type="text"
             id="destination"
-            placeholder="Destino (e.g., Paris)"
+            placeholder="Destino (ej. París)"
             required
           />
           <input
             type="text"
             id="country"
-            placeholder="País (e.g., France)"
+            placeholder="País (ej. Francia)"
             required
           />
           <input
             type="text"
             id="city"
-            placeholder="Ciudad (e.g., Paris)"
+            placeholder="Ciudad (ej. París)"
             required
           />
           <label for="start-date">Fecha de Inicio:</label>
           <input type="date" id="start-date" required />
           <label for="end-date">Fecha de Fin:</label>
           <input type="date" id="end-date" required />
-          <button type="submit">Agregar Viaje</button>
+          <button type="submit">Añadir Viaje</button>
         </form>
       </div>
 
@@ -57,7 +56,7 @@
             alt="Budget Icon"
             class="icon"
           />
-          Establecer Presupuesto
+          Define tu Presupuesto
         </h2>
         <form id="budget-form">
           <select id="trip-select-budget" required></select>
@@ -77,7 +76,7 @@
           <h3>Asignar Presupuesto por Categoría</h3>
           <form id="category-budget-form">
             <select id="category-select" required>
-              <option value="Alimentación">Comida</option>
+              <option value="Alimentación">Alimentación</option>
               <option value="Alojamiento">Alojamiento</option>
               <option value="Transporte">Transporte</option>
               <option value="Actividades">Actividades</option>
@@ -89,7 +88,7 @@
               placeholder="Monto"
               required
             />
-            <button type="submit">Agregar Presupuesto por Categoría</button>
+            <button type="submit">Añadir Presupuesto de Categoría</button>
           </form>
           <div id="category-budgets-display"></div>
         </div>
@@ -102,12 +101,18 @@
             alt="Expense Icon"
             class="icon"
           />
-          Registrar Gastos
+          Registra tus Gastos
         </h2>
         <form id="expense-form">
           <select id="trip-select-expense" required></select>
+          <input
+            type="text"
+            id="expense-description"
+            placeholder="Descripción del gasto"
+            required
+          />
           <select id="expense-category" required>
-            <option value="Alimentación">Comida</option>
+            <option value="Alimentación">Alimentación</option>
             <option value="Alojamiento">Alojamiento</option>
             <option value="Transporte">Transporte</option>
             <option value="Actividades">Actividades</option>
@@ -118,6 +123,7 @@
             id="expense-amount"
             placeholder="Monto"
             required
+            step="0.01"
           />
           <input type="date" id="expense-date" required />
           <button type="submit">Registrar Gasto</button>
@@ -136,11 +142,32 @@
         <select id="trip-select-summary"></select>
         <div id="summary-display"></div>
         <div id="alerts-display"></div>
+
+        <div class="charts-container">
+          <div class="chart-box">
+            <h3>Presupuesto vs. Gasto Real por Categoría</h3>
+            <canvas id="budget-vs-actual-chart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3>Distribución de Gastos</h3>
+            <canvas id="category-spending-chart"></canvas>
+          </div>
+        </div>
+
+        <div id="daily-summary-display" class="analysis-box"></div>
+        <div id="top-expenses-display" class="analysis-box"></div>
+        <div id="savings-scenarios-display" class="analysis-box"></div>
+
+        <div class="report-buttons">
+          <button id="generate-report-btn">Generar Reporte PDF</button>
+          <button id="email-report-btn">Enviar Resumen por Email</button>
+        </div>
+
         <h3>Filtrar Gastos</h3>
         <form id="filter-form">
           <select id="filter-category">
             <option value="">Todas las Categorías</option>
-            <option value="Alimentación">Comida</option>
+            <option value="Alimentación">Alimentación</option>
             <option value="Alojamiento">Alojamiento</option>
             <option value="Transporte">Transporte</option>
             <option value="Actividades">Actividades</option>
@@ -153,10 +180,6 @@
           <button type="button" id="filter-btn">Filtrar</button>
         </form>
         <div id="filtered-expenses-display"></div>
-        <div id="chart-container"></div>
-        <div id="top-categories-display"></div>
-        <div id="top-categories-display2"></div>
-        <button type="button" id="generate-pdf-btn">Generar Resumen PDF</button>
       </div>
     </div>
     <script src="script.js"></script>
