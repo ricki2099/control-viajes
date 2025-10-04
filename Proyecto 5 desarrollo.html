@@ -1,97 +1,187 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Presupuesto de Viajes</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestor de Presupuesto de Viaje</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  </head>
+  <body>
     <div class="container">
-        <h1>Presupuesto de Viajes</h1>
-        <div id="trip-registration" class="card">
-            <h2><img src="https://img.icons8.com/?size=100&id=35080&format=png&color=000000" alt="Trip Icon" class="icon">   Registrar Viaje</h2>
-            <form id="trip-form">
-                <input type="text" id="destination" placeholder="Destino (e.g., Paris)" required>
-                <input type="text" id="country" placeholder="País (e.g., France)" required>
-                <input type="text" id="city" placeholder="Ciudad (e.g., Paris)" required>
-                <label for="start-date">Fecha de Inicio:</label>
-                <input type="date" id="start-date" required>
-                <label for="end-date">Fecha de Fin:</label>
-                <input type="date" id="end-date" required>
-                <button type="submit">Agregar Viaje</button>
-            </form>
+      <h1>Gestor de Presupuesto de Viaje</h1>
+
+      <div id="trip-registration" class="card">
+        <h2>
+          <img
+            src="https://img.icons8.com/?size=100&id=35080&format=png&color=000000"
+            alt="Trip Icon"
+            class="icon"
+          />
+          Registra tu Viaje
+        </h2>
+        <form id="trip-form">
+          <input
+            type="text"
+            id="destination"
+            placeholder="Destino (ej. París)"
+            required
+          />
+          <input
+            type="text"
+            id="country"
+            placeholder="País (ej. Francia)"
+            required
+          />
+          <input
+            type="text"
+            id="city"
+            placeholder="Ciudad (ej. París)"
+            required
+          />
+          <label for="start-date">Fecha de Inicio:</label>
+          <input type="date" id="start-date" required />
+          <label for="end-date">Fecha de Fin:</label>
+          <input type="date" id="end-date" required />
+          <button type="submit">Añadir Viaje</button>
+        </form>
+      </div>
+
+      <div id="budget-definition" class="card" style="display: none">
+        <h2>
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/money-bag.png"
+            alt="Budget Icon"
+            class="icon"
+          />
+          Define tu Presupuesto
+        </h2>
+        <form id="budget-form">
+          <select id="trip-select-budget" required></select>
+          <input
+            type="number"
+            id="total-budget"
+            placeholder="Presupuesto Total"
+            required
+          />
+          <select id="currency" required>
+            <option value="USD">USD</option>
+            <option value="COP">COP</option>
+          </select>
+          <button type="submit">Establecer Presupuesto</button>
+        </form>
+        <div id="category-budget-section" style="display: none">
+          <h3>Asignar Presupuesto por Categoría</h3>
+          <form id="category-budget-form">
+            <select id="category-select" required>
+              <option value="Alimentación">Alimentación</option>
+              <option value="Alojamiento">Alojamiento</option>
+              <option value="Transporte">Transporte</option>
+              <option value="Actividades">Actividades</option>
+              <option value="Otros">Otros</option>
+            </select>
+            <input
+              type="number"
+              id="category-budget"
+              placeholder="Monto"
+              required
+            />
+            <button type="submit">Añadir Presupuesto de Categoría</button>
+          </form>
+          <div id="category-budgets-display"></div>
+        </div>
+      </div>
+
+      <div id="expense-tracking" class="card" style="display: none">
+        <h2>
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/receipt.png"
+            alt="Expense Icon"
+            class="icon"
+          />
+          Registra tus Gastos
+        </h2>
+        <form id="expense-form">
+          <select id="trip-select-expense" required></select>
+          <input
+            type="text"
+            id="expense-description"
+            placeholder="Descripción del gasto"
+            required
+          />
+          <select id="expense-category" required>
+            <option value="Alimentación">Alimentación</option>
+            <option value="Alojamiento">Alojamiento</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Actividades">Actividades</option>
+            <option value="Otros">Otros</option>
+          </select>
+          <input
+            type="number"
+            id="expense-amount"
+            placeholder="Monto"
+            required
+            step="0.01"
+          />
+          <input type="date" id="expense-date" required />
+          <button type="submit">Registrar Gasto</button>
+        </form>
+      </div>
+
+      <div id="summary-analysis" class="card" style="display: none">
+        <h2>
+          <img
+            src="https://img.icons8.com/ios-filled/50/000000/combo-chart.png"
+            alt="Summary Icon"
+            class="icon"
+          />
+          Resumen del Presupuesto
+        </h2>
+        <select id="trip-select-summary"></select>
+        <div id="summary-display"></div>
+        <div id="alerts-display"></div>
+
+        <div class="charts-container">
+          <div class="chart-box">
+            <h3>Presupuesto vs. Gasto Real por Categoría</h3>
+            <canvas id="budget-vs-actual-chart"></canvas>
+          </div>
+          <div class="chart-box">
+            <h3>Distribución de Gastos</h3>
+            <canvas id="category-spending-chart"></canvas>
+          </div>
         </div>
 
-        <div id="budget-definition" class="card" style="display: none;">
-            <h2><img src="https://img.icons8.com/ios-filled/50/000000/money-bag.png" alt="Budget Icon" class="icon"> Establecer Presupuesto</h2>
-            <form id="budget-form">
-                <select id="trip-select-budget" required></select>
-                <input type="number" id="total-budget" placeholder="Presupuesto Total" required>
-                <select id="currency" required>
-                    <option value="USD">USD</option>
-                    <option value="COP">COP</option>
-                </select>
-                <button type="submit">Establecer Presupuesto</button>
-            </form>
-            <div id="category-budget-section" style="display: none;">
-                <h3>Asignar Presupuesto por Categoría</h3>
-                <form id="category-budget-form">
-                    <select id="category-select" required>
-                        <option value="Alimentación">Comida</option>
-                        <option value="Alojamiento">Alojamiento</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Actividades">Actividades</option>
-                        <option value="Otros">Otros</option>
-                    </select>
-                    <input type="number" id="category-budget" placeholder="Monto" required>
-                    <button type="submit">Agregar Presupuesto por Categoría</button>
-                </form>
-                <div id="category-budgets-display"></div>
-            </div>
+        <div id="daily-summary-display" class="analysis-box"></div>
+        <div id="top-expenses-display" class="analysis-box"></div>
+        <div id="savings-scenarios-display" class="analysis-box"></div>
+
+        <div class="report-buttons">
+          <button id="generate-report-btn">Generar Reporte PDF</button>
+          <button id="email-report-btn">Enviar Resumen por Email</button>
         </div>
 
-        <div id="expense-tracking" class="card" style="display: none;">
-            <h2><img src="https://img.icons8.com/ios-filled/50/000000/receipt.png" alt="Expense Icon" class="icon"> Registrar Gastos</h2>
-            <form id="expense-form">
-                <select id="trip-select-expense" required></select>
-                <select id="expense-category" required>
-                    <option value="Alimentación">Comida</option>
-                    <option value="Alojamiento">Alojamiento</option>
-                    <option value="Transporte">Transporte</option>
-                    <option value="Actividades">Actividades</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <input type="number" id="expense-amount" placeholder="Monto" required>
-                <input type="date" id="expense-date" required>
-                <button type="submit">Registrar Gasto</button>
-            </form>
-        </div>
-
-        <div id="summary-analysis" class="card" style="display: none;">
-            <h2><img src="https://img.icons8.com/ios-filled/50/000000/combo-chart.png" alt="Summary Icon" class="icon"> Resumen del Presupuesto</h2>
-            <select id="trip-select-summary"></select>
-            <div id="summary-display"></div>
-            <div id="alerts-display"></div>
-            <h3>Filtrar Gastos</h3>
-            <form id="filter-form">
-                <select id="filter-category">
-                    <option value="">Todas las Categorías</option>
-                    <option value="Alimentación">Comida</option>
-                    <option value="Alojamiento">Alojamiento</option>
-                    <option value="Transporte">Transporte</option>
-                    <option value="Actividades">Actividades</option>
-                    <option value="Otros">Otros</option>
-                </select>
-                <label for="filter-start-date">Fecha de Inicio:</label>
-                <input type="date" id="filter-start-date">
-                <label for="filter-end-date">Fecha de Fin:</label>
-                <input type="date" id="filter-end-date">
-                <button type="button" id="filter-btn">Filtrar</button>
-            </form>
-            <div id="filtered-expenses-display"></div>
-        </div>
+        <h3>Filtrar Gastos</h3>
+        <form id="filter-form">
+          <select id="filter-category">
+            <option value="">Todas las Categorías</option>
+            <option value="Alimentación">Alimentación</option>
+            <option value="Alojamiento">Alojamiento</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Actividades">Actividades</option>
+            <option value="Otros">Otros</option>
+          </select>
+          <label for="filter-start-date">Fecha de Inicio:</label>
+          <input type="date" id="filter-start-date" />
+          <label for="filter-end-date">Fecha de Fin:</label>
+          <input type="date" id="filter-end-date" />
+          <button type="button" id="filter-btn">Filtrar</button>
+        </form>
+        <div id="filtered-expenses-display"></div>
+      </div>
     </div>
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
