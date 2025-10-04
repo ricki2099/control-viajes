@@ -338,11 +338,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const highestSpending = actualSpending.sort((a, b) => b.total - a.total)[0];
     const potentialSaving = highestSpending.total * 0.1;
+    // sacar porcentaje de ahorro si se reduce en x%
+    const savingPercentage = (potentialSaving / highestSpending.total) * 100;
 
     savingsDiv.innerHTML = `<h4>Escenario de Ahorro</h4>
             <p>Tu mayor gasto está en <strong>${
               highestSpending.category
-            }</strong>. Si redujeras estos gastos en un 10%, podrías ahorrar aproximadamente <strong>${potentialSaving.toFixed(
+            }</strong>.<br> Si redujeras estos gastos en un ${savingPercentage.toFixed(2)}%, podrías ahorrar aproximadamente <strong>${potentialSaving.toFixed(
       2
     )} ${trip.currency}</strong>.</p>`;
   }
@@ -423,18 +425,11 @@ document.addEventListener("DOMContentLoaded", () => {
     doc.text(topExpenses, 10, y);
     y += 12;
 
-    const filteredExpenses = document.getElementById(
-      "filtered-expenses-display"
-    ).innerText;
-    checkPageSpace(15);
-    doc.text(filteredExpenses, 10, y);
-    y += 12;
-
     // --- Gráficos ---
     const imgCanvas = document.querySelector("#budget-vs-actual-chart");
     const imgCanvas2 = document.querySelector("#category-spending-chart");
-    const chart1Image = imgCanvas.toDataURL("image/png", 1.0);
-    const chart2Image = imgCanvas2.toDataURL("image/png", 1.0);
+    const chart1Image = imgCanvas.toDataURL("image/png", 0.3);
+    const chart2Image = imgCanvas2.toDataURL("image/png", 0.3);
 
     checkPageSpace(210);
     doc.addImage(chart1Image, "PNG", 10, y, 190, 100);
@@ -443,33 +438,24 @@ document.addEventListener("DOMContentLoaded", () => {
     checkPageSpace(110);
     doc.addImage(chart2Image, "PNG", 10, y, 190, 100);
     y += 110;
+    const filteredExpenses = document.getElementById(
+      "filtered-expenses-display"
+    ).innerText;
+    checkPageSpace(200);
+    doc.text(filteredExpenses, 10, y);
+    y += 12;
+
+    //  --- Escenario de ahorro ---
+    const savingsScenario = document.getElementById(
+      "savings-scenarios-display"
+    ).innerText  ;
+    checkPageSpace(300);
+    doc.text(savingsScenario, 10, y);
+    y += 12;
 
     // --- Guardar PDF ---
     doc.save(`Reporte_Viaje_${trip.destination}.pdf`);
   }
-
-  //   function emailReport() {
-  //     const tripId = parseInt(
-  //       document.getElementById("trip-select-summary").value
-  //     );
-  //     const trip = findTripById(tripId);
-  //     if (!trip) return;
-
-  //     const totalExpenses = trip.expenses.reduce(
-  //       (sum, exp) => sum + exp.amount,
-  //       0
-  //     );
-  //     const subject = `Resumen del viaje a ${trip.destination}`;
-  //     const body =
-  //       `Hola,\n\nAquí está el resumen de mi viaje a ${trip.destination}:\n\n` +
-  //       `- Presupuesto Total: ${trip.totalBudget.toFixed(2)} ${trip.currency}\n` +
-  //       `- Gasto Total: ${totalExpenses.toFixed(2)} ${trip.currency}\n\n` +
-  //       `Saludos.`;
-
-  //     window.location.href = `mailto:?subject=${encodeURIComponent(
-  //       subject
-  //     )}&body=${encodeURIComponent(body)}`;
-  //   }
 
   // --- FUNCIONES AUXILIARES ---
   function findTripById(id) {
@@ -546,32 +532,24 @@ document.addEventListener("DOMContentLoaded", () => {
     doc.text(summary, 20, 40);
 
     // 2️⃣ Convertir a Base64
-    const pdfBase64 = doc.output("datauristring").split(",")[1]; // quitar encabezado "data:application/pdf;base64,"
-
-    // const templateParams = {
-    //  to_name: "Usuario",
-    //   to_email: "rirodriguezb@udistrital.edu.co", // cámbialo o haz que se capture de un input
-    //   trip_name: tripName,
-    //   message: "Adjunto el resumen de tu viaje en PDF.",
-    //   my_file: pdfBase64, // 👈 el archivo adjunto en base64
-    //   file_name: `Resumen_${tripName}.pdf`, // puedes pedirlo en un input si prefieres
-    // };
-
-    emailjs.send("service_c0mhrt9","template_mlbm3uv",{
-        to_name: "Usuario",
+    const pdfBase64 =  doc.output("datauristring"); // quitar encabezado "data:application/pdf;base64,"
+    // 3️⃣ Enviar el correo
+    emailjs
+      .send("service_c0mhrt9", "template_mlbm3uv", {
+        to_name: "Usuario", // Reemplaza con el nombre del destinatario
         trip_name: tripName,
         message: "Adjunto el resumen de tu viaje en PDF.",
         my_file: pdfBase64,
         file_name: `Resumen_${tripName}.pdf`,
-        email: "rirodriguezb@udistrital.edu.co",
-    }).then(
-        
-      function (response) {
-        alert("✅ Correo enviado correctamente!");
-      },
-      function (error) {
-        alert("❌ Error al enviar el correo: " + JSON.stringify(error));
-      }
-    );
+        email: "rirodriguezb@udistrital.edu.co", // Reemplaza con el email del destinatario
+      })
+      .then(
+        function (response) {
+          alert("✅ Correo enviado correctamente!");
+        },
+        function (error) {
+          alert("❌ Error al enviar el correo: " + JSON.stringify(error));
+        }
+      );
   });
 });
