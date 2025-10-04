@@ -511,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   (function () {
-    emailjs.init("x2Cw3gP8tJmWPxRnD"); // Reemplaza con tu clave pública
+    emailjs.init(""); // Reemplaza con tu clave pública
   })();
 
   emailReportBtn.addEventListener("click", function () {
@@ -535,13 +535,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const pdfBase64 =  doc.output("datauristring"); // quitar encabezado "data:application/pdf;base64,"
     // 3️⃣ Enviar el correo
     emailjs
-      .send("service_c0mhrt9", "template_mlbm3uv", {
+      .send("", "", {
         to_name: "Usuario", // Reemplaza con el nombre del destinatario
         trip_name: tripName,
         message: "Adjunto el resumen de tu viaje en PDF.",
         my_file: pdfBase64,
         file_name: `Resumen_${tripName}.pdf`,
-        email: "rirodriguezb@udistrital.edu.co", // Reemplaza con el email del destinatario
+        email: "", // Reemplaza con el email del destinatario
       })
       .then(
         function (response) {
